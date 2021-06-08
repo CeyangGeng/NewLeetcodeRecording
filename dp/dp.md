@@ -303,6 +303,56 @@
 > > >                 dp[i] = min(dp[i], dp[i - coin] + 1)
 > > >         return dp[amount] if dp[amount] < float('inf') else -1
 > > > ```
+> >
+> > Ones and Zeros https://leetcode.com/problems/ones-and-zeroes/
+> >
+> > > The base case in top-down method is different from the dp initilization part in bottom-up dp.
+> > >
+> > > In the two dimensional questions(start from the top left, end at the bottom right): the base case is start at the bottom right, the initialization in dp is top line and left column.
+> > >
+> > > In the one dimension question(start from the left and ends at right): the base case is start at the right most, the initialization is assign value to the left most.
+> > >
+> > > ```python
+> > > # top-down method
+> > > class Solution:
+> > >     def findMaxForm(self, strs: List[str], m: int, n: int) -> int:
+> > >         memo = dict()
+> > >         zeroOneCount = dict()
+> > >         size = len(strs)
+> > >         def helper(index, zc, oc, memo):
+> > >             if index == size or (zc == 0 and oc == 0): return 0
+> > >             if(index, zc, oc) in memo: return memo[(index, zc, oc)]
+> > >             maxRes = 0
+> > >             for i in range(index, size):
+> > >                 string = strs[i]
+> > >                 curZeroCount, curOneCount = string.count("0"), string.count("1")
+> > >                 include = 0
+> > >                 if curZeroCount <= zc and curOneCount <= oc:
+> > >                     include = helper(i + 1, zc - curZeroCount, oc - curOneCount, memo) + 1
+> > >                 exclude = helper(i + 1, zc, oc, memo)
+> > >                 maxRes = max(maxRes, include, exclude)
+> > >             memo[(index, zc, oc)] = maxRes
+> > >             return maxRes
+> > >         return helper(0, m, n, memo)
+> > > ```
+> > >
+> > > ```python
+> > > # bottom-up method
+> > > class Solution:
+> > >     def findMaxForm(self, strs: List[str], m: int, n: int) -> int:
+> > >         size = len(strs)
+> > >         dp = [[[0 for _ in range(n + 1)]for _ in range(m + 1)] for _ in range(size + 1)]
+> > >         for k in range(1, size + 1):
+> > >             string = strs[k - 1]
+> > >             zeroCount, oneCount = string.count("0"), string.count("1")
+> > >             for i in range( m + 1):
+> > >                 for j in range( n + 1):
+> > >                     if zeroCount <= i and oneCount <= j:
+> > >                         dp[k][i][j] = max(dp[k - 1][i][j], dp[k - 1][i - zeroCount][j - oneCount] + 1)
+> > >                     else:
+> > >                         dp[k][i][j] = dp[k - 1][i][j]
+> > >         return dp[size][m][n]
+> > > ```
 > > >
 > > > 
 >
