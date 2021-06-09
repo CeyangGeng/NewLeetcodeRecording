@@ -2,7 +2,7 @@
 
 > 
 >
->  Minimum Path Sum  https://leetcode.com/problems/minimum-path-sum/
+> Minimum Path Sum  https://leetcode.com/problems/minimum-path-sum/
 >
 > > Solution
 > >
@@ -145,7 +145,7 @@
 > >    ```python
 > >    class Solution:
 > >        def calculateMinimumHP(self, dungeon: List[List[int]]) -> int:
-> >            
+> >               
 > >            m, n = len(dungeon), len(dungeon[0])
 > >            dp = [[float('inf') for _ in range(n + 1)] for _ in range(m + 1)]
 > >            dp[m][n - 1], dp[m - 1][n] = 1, 1
@@ -290,6 +290,10 @@
 > > >
 > > > DP: begin from smallest
 > > >
+> > > If the coins are unlimited, then the inner loop should be incremental, otherwise, the inner loop should be decremental. 
+> > >
+> > > See the explanation here: https://leetcode.com/discuss/study-guide/1200320/Thief-with-a-knapsack-a-series-of-crimes.
+> > >
 > > > ```python
 > > > class Solution:
 > > >     def coinChange(self, coins: List[int], amount: int) -> int:
@@ -305,6 +309,8 @@
 > > > ```
 > >
 > > Ones and Zeros https://leetcode.com/problems/ones-and-zeroes/
+> >
+> > A list of 0-1 snapsack problem https://leetcode.com/discuss/study-guide/1200320/Thief-with-a-knapsack-a-series-of-crimes.
 > >
 > > > The base case in top-down method is different from the dp initilization part in bottom-up dp.
 > > >
@@ -353,8 +359,64 @@
 > > >                         dp[k][i][j] = dp[k - 1][i][j]
 > > >         return dp[size][m][n]
 > > > ```
+> >
+> > Partition Equal Subset Sum https://leetcode.com/problems/partition-equal-subset-sum/
+> >
+> > > ```python
+> > > # classic snapsack problem 
+> > > # pick or not
+> > > class Solution:
+> > >  def canPartition(self, nums: List[int]) -> bool:
+> > >      total = sum(nums)
+> > >      if total & 1 == 1: return False
+> > >      target = int(total / 2)
+> > >      size = len(nums)
+> > >      dp =[ [False for _ in range(target + 1)] for _ in range(size + 1)]
+> > >      dp[0][0] = True
+> > >      for i in range(1, size + 1):
+> > >          dp[i][0] = True
+> > >      for j in range(1, target + 1):
+> > >          dp[0][j] = False
+> > >      for i in range(1, size + 1):
+> > >          for j in range(1, target + 1):
+> > >              dp[i][j] = dp[i - 1][j]
+> > >              if j >= nums[i - 1]:
+> > >                  dp[i][j] = dp[i][j] or dp[i - 1][j - nums[i - 1]]
+> > >      return dp[size][target]
+> > > ```
 > > >
-> > > 
+> > > ```python
+> > > # space optimization
+> > > # if the element is limited, the outer loop should be the element, the inner loop should be the target and decremental.
+> > > class Solution:
+> > >     def canPartition(self, nums: List[int]) -> bool:
+> > >         total = sum(nums)
+> > >         if total & 1 == 1: return False
+> > >         target = int(total / 2) 
+> > >         dp = [False for _ in range(target + 1)]
+> > >         dp[0] = True
+> > >         for num in nums:
+> > >             for i in range(target, num - 1, -1):
+> > >                 dp[i] = dp[i] or dp[i - num]
+> > >         return dp[-1]
+> > > ```
+> >
+> >  Integer Break https://leetcode.com/problems/integer-break/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def integerBreak(self, n: int) -> int:
+> > >         if n == 2: return 1
+> > >         if n == 3: return 2
+> > >         product = 1
+> > >         while(n > 4):
+> > >             product *= 3
+> > >             n -= 3
+> > >         product *= n
+> > >         return product
+> > > ```
+> >
+> > 
 >
 > 
 >
