@@ -1,4 +1,4 @@
-> ## The general solution for this is think about how to apply the question to the base case, how to get the transfer function.
+> ## The general solution for this is to think about how to apply the question to the base case, how to get the transfer function.
 
 > 
 >
@@ -145,7 +145,7 @@
 > >    ```python
 > >    class Solution:
 > >        def calculateMinimumHP(self, dungeon: List[List[int]]) -> int:
-> >               
+> >                  
 > >            m, n = len(dungeon), len(dungeon[0])
 > >            dp = [[float('inf') for _ in range(n + 1)] for _ in range(m + 1)]
 > >            dp[m][n - 1], dp[m - 1][n] = 1, 1
@@ -404,6 +404,7 @@
 > >  Integer Break https://leetcode.com/problems/integer-break/
 > >
 > > > ```python
+> > > # mathematical solution
 > > > class Solution:
 > > >     def integerBreak(self, n: int) -> int:
 > > >         if n == 2: return 1
@@ -415,9 +416,211 @@
 > > >         product *= n
 > > >         return product
 > > > ```
+> > >
+> > > ```python
+> > > # Normal dp solution
+> > > # the outer loop traverse all the sum factors
+> > > # the inner loop traverse all the sums from factor to the target
+> > > # If we don't pick factor i, then leave dp[j]
+> > > # If we pick factor, then there are two possibilities: use j - i itself or use dp[j - 1]
+> > > class Solution:
+> > >     def integerBreak(self, n: int) -> int:
+> > >         dp = [1] * (n + 1)
+> > >         for i in range(2, n):
+> > >             for j in range(i + 1, n + 1):
+> > >                 dp[j] = max(dp[j], dp[j - i] * i, (j - i) * i)
+> > >         return dp[-1]
+> > > ```
+> >
+> > Coin Change 2 https://leetcode.com/problems/coin-change-2/
+> >
+> > > ```python
+> > > # To differenciate all the combinations, we require that the combinations must ends with the number num to add up to a certain sum.
+> > > class Solution:
+> > >     def change(self, amount: int, coins: List[int]) -> int:
+> > >         dp = [0] * (amount + 1)
+> > >         dp[0] = 1
+> > >         for coin in coins:
+> > >             for i in range(coin, amount + 1):
+> > >                 dp[i] += dp[i - coin]
+> > >         return dp[-1]
+> > > ```
+> >
+> > order-1:
+> >
+> > 
+> >
+> > ```python
+> > for each sum in dp[]
+> >     for each num in nums[]
+> >         if (sum >= num)
+> >             dp[sum] += dp[sum-num];
+> > ```
+> >
+> > 
+> >
+> > order-2:
+> >
+> > 
+> >
+> > ```python
+> > for each num in nums[]
+> >     for each sum in dp[]  >= num
+> >         dp[sum] += dp[sum-num];
+> > ```
+> >
+> > order-1 is used to calculate the number of combinations considering different sequences
+> > order-2 is used to calculate the number of combinations NOT considering different sequences
+> >
+> > 
+> >
+> > Combination Sum IV. https://leetcode.com/problems/combination-sum-iv/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def combinationSum4(self, nums: List[int], target: int) -> int:
+> > >         dp = [0] * (target + 1)
+> > >         dp[0] = 1
+> > >         for i in range(1, target + 1):
+> > >             for num in nums:
+> > >                 if num <= i:
+> > >                     dp[i] += dp[i - num]
+> > >         return dp[-1]
+> > > ```
+> >
+> > 2 Keys Keyboard https://leetcode.com/problems/2-keys-keyboard/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def minSteps(self, n: int) -> int:
+> > >         dp = [i for i in range(n + 1)]
+> > >         dp[1] = 0
+> > >         for i in range(2, n + 1):
+> > >             for j in range(int(i / 2), 1, -1):
+> > >                 if (i % j) == 0:
+> > >                     dp[i] = dp[j] + int(i / j)
+> > >                     break
+> > >         return dp[-1]
+> > > ```
+> >
+> > Min Cost Climbing Stairs https://leetcode.com/problems/min-cost-climbing-stairs/
+> >
+> > ```python
+> > class Solution:
+> >     def minCostClimbingStairs(self, cost: List[int]) -> int:
+> >         cost.append(0)
+> >         n = len(cost)
+> >         for i in range(2, n):
+> >             cost[i] += min(cost[i - 1], cost[i - 2])
+> >         return cost[-1]
+> > ```
 > >
 > > 
 >
-> 
+> > snapsack problem solution thought:
+> >
+> > If for each element in the given list, the user could choose to use it or not, then it is a snapsack problem.
+> >
+> > Typically, there are always two level nested for loop. 
+> >
+> > > - If the order of the combinations is not considered, then the outer loop should be the elements, the inner loop should be the index of the dp list.
+> > >
+> > > - If the order of the combinations is considered, then the outer loop should be the index of the dp list, the inner loop should be the elements.
+> >
+> > There are incremental and decremental order of the element inner loop. 
+> >
+> > > - If the elements are infinite, then the order should be incremental. 
+> > > - If the elements are decremental, then the order should be decremental.
+> >
+> >  Minimum Number of Refueling Stops https://leetcode.com/problems/minimum-number-of-refueling-stops/
+> >
+> > > ```python
+> > > # snapsack
+> > > class Solution:
+> > >     def minRefuelStops(self, target: int, startFuel: int, stations: List[List[int]]) -> int:
+> > >         size = len(stations)
+> > >         dp = [startFuel] + [-1] * size
+> > >         for i in range(size):
+> > >             for j in range(i + 1, 0, -1):
+> > >                 station = stations[i]
+> > >                 dis, gas = station[0], station[1]
+> > >                 if dp[j - 1] >= dis:
+> > >                     dp[j] = max(dp[j], dp[j - 1] + gas)
+> > >         for i in range(size + 1):
+> > >             if dp[i] >= target: return i
+> > >         return -1
+> > > ```
+> > >
+> > > ```python
+> > > # greedy
+> > > class Solution:
+> > >     def minRefuelStops(self, target: int, startFuel: int, stations: List[List[int]]) -> int:
+> > >         size = len(stations)
+> > >         i, res = 0, 0
+> > >         cur = startFuel
+> > >         queue = []
+> > >         while cur < target:
+> > >             while i < size and stations[i][0] <= cur:
+> > >                 heapq.heappush(queue, -stations[i][1])
+> > >                 i += 1
+> > >             if  not queue: return -1
+> > >             cur += (-heapq.heappop(queue))
+> > >             res += 1
+> > >         return res
+> > > ```
+> >
+> > Minimum Falling Path Sum https://leetcode.com/problems/minimum-falling-path-sum/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def minFallingPathSum(self, matrix: List[List[int]]) -> int:
+> > >         m, n = len(matrix), len(matrix[0])
+> > >         for i in range(1, m):
+> > >             for j in range(n):
+> > >                 if j == 0: matrix[i][j] += min(matrix[i - 1][j], matrix[i - 1][j + 1])
+> > >                 elif j == n -1: matrix[i][j] += min(matrix[i - 1][j - 1], matrix[i - 1][j])
+> > >                 else: matrix[i][j] += min(matrix[i - 1][j - 1], matrix[i - 1][j], matrix[i - 1][j + 1])
+> > >         return min(matrix[-1])
+> > > ```
+> >
+> > Minimum Cost For Tickets
+> >
+> > > ```python
+> > > class Solution:
+> > >     def mincostTickets(self, days: List[int], costs: List[int]) -> int:
+> > >         maxDay = days[-1]
+> > >         dp = [0] + [float("inf")] * maxDay
+> > >         for i in range(1, maxDay + 1):
+> > >             dp[i] = dp[i - 1]
+> > >             if i in days:
+> > >                 oneDayBeforeIndex = max(0, i - 1)
+> > >                 sevenDayBeforeIndex = max(0, i - 7)
+> > >                 thirtyDayBeforeIndex = max(0, i - 30)
+> > >                 dp[i] = min(dp[oneDayBeforeIndex] + costs[0], dp[sevenDayBeforeIndex] + costs[1], dp[thirtyDayBeforeIndex] + costs[2])
+> > >         return dp[-1]
+> > > ```
+> >
+> >  Last Stone Weight II
+> >
+> > > ```python
+> > > class Solution:
+> > >     def lastStoneWeightII(self, stones: List[int]) -> int:
+> > >         dp = {0}
+> > >         maxTotal = 0
+> > >         for stone in stones:
+> > >             maxTotal += stone
+> > >             for total in range(maxTotal, stone - 1, -1):
+> > >                 if total - stone in dp:
+> > >                     dp.add(total)
+> > >         half = maxTotal / 2
+> > >         minDiff = float('inf')
+> > >         for i in dp:
+> > >             minDiff = min(minDiff, abs(maxTotal - 2 * i))
+> > >         return minDiff
+> > > ```
+> >
+> > 
+> >
+> > 
 >
 > 
