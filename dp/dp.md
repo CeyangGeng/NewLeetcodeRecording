@@ -619,6 +619,85 @@
 > > >         return minDiff
 > > > ```
 > >
+> > Unique Paths II
+> >
+> > > ```python
+> > > class Solution:
+> > >     def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
+> > >         if obstacleGrid[0][0] == 1: return 0
+> > >         m, n = len(obstacleGrid), len(obstacleGrid[0])
+> > >         dp = [[0 for _ in range(n)] for _ in range(m)]
+> > >         dp[0][0] = 1
+> > >         for j in range(1, n):
+> > >             if obstacleGrid[0][j] == 1: break
+> > >             dp[0][j] = 1
+> > >         for i in range(1, m):
+> > >             if obstacleGrid[i][0] == 1: break
+> > >             dp[i][0] = 1
+> > >         for i in range(1, m):
+> > >             for j in range(1, n):
+> > >                 dp[i][j] = 0 if obstacleGrid[i][j] == 1 else dp[i - 1][j] + dp[i][j - 1]
+> > >         return dp[-1][-1]
+> > > ```
+> >
+> >  Partition Equal Subset Sum
+> >
+> > > ```python
+> > > class Solution:
+> > >     def canPartition(self, nums: List[int]) -> bool:
+> > >         total = sum(nums)
+> > >         if(total & 1 == 1): return False
+> > >         total = int(total / 2)
+> > >         dp = [False] * (total + 1)
+> > >         dp[0] = True
+> > >         for num in nums:
+> > >             for s in range(total, num - 1, -1):
+> > >                 dp[s] |= dp[s - num]
+> > >         print(dp)
+> > >         return dp[-1]
+> > > ```
+> >
+> > Target Sum https://leetcode.com/problems/target-sum/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def findTargetSumWays(self, nums: List[int], target: int) -> int:
+> > >         total = sum(nums)
+> > >         tmp = (total + target)
+> > >         if(tmp & 1 == 1): return 0
+> > >         partialTotal = int(tmp / 2)
+> > >         dp = [1] + [0] * partialTotal
+> > >         for num in nums:
+> > >             for i in range(partialTotal, num-1, -1):
+> > >                 dp[i] += dp[i - num]
+> > >         return dp[-1]
+> > > ```
+> >
+> > Out of Boundary Paths https://leetcode.com/problems/out-of-boundary-paths/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def findPaths(self, m: int, n: int, maxMove: int, startRow: int, startColumn: int) -> int:
+> > >         memo = dict()
+> > >         def helper(row, col, leftMove):
+> > >             if row in {-1, m} or col in {-1, n}:
+> > >                 if leftMove >= 0: return 1
+> > >                 else: return 0
+> > >             if leftMove == 0: return 0
+> > >             if (row, col, leftMove) in memo: return memo[(row, col,leftMove)]
+> > >             leftMoves = leftMove - 1
+> > >             res = 0
+> > >             res += helper(row - 1, col, leftMoves)
+> > >             res += helper(row + 1, col, leftMoves)
+> > >             res += helper(row, col - 1, leftMoves)
+> > >             res += helper(row, col + 1, leftMoves)
+> > >             memo[(row, col, leftMove)] = res
+> > >             return res 
+> > >         return helper(startRow, startColumn, maxMove) % (10 ** 9 + 7)
+> > > ```
+> >
+> > 
+> >
 > > 
 > >
 > > 
