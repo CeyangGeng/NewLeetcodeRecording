@@ -696,6 +696,267 @@
 > > >         return helper(startRow, startColumn, maxMove) % (10 ** 9 + 7)
 > > > ```
 > >
+> > Number of Longest Increasing Subsequence https://leetcode.com/problems/number-of-longest-increasing-subsequence/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def findNumberOfLIS(self, nums: List[int]) -> int:
+> > >         size = len(nums)
+> > >         dp = [[1, 1] for _ in range(size)] 
+> > >         maxLen = 1
+> > >         maxCount = 1
+> > >         for i in range(1, size):
+> > >             curMaxLen = 1
+> > >             curMaxCount = 1
+> > >             for j in range(i - 1, -1, -1):
+> > >                 if nums[j] < nums[i]:
+> > >                     temp = dp[j][0] + 1
+> > >                     if temp > curMaxLen:
+> > >                         curMaxLen = temp
+> > >                         curMaxCount = dp[j][1]
+> > >                     elif temp == curMaxLen:
+> > >                         curMaxCount += dp[j][1]
+> > >             dp[i][0], dp[i][1] = curMaxLen, curMaxCount
+> > >             if curMaxLen > maxLen:
+> > >                 maxLen = curMaxLen
+> > >                 maxCount = curMaxCount
+> > >             elif curMaxLen == maxLen:
+> > >                 maxCount += curMaxCount
+> > >         print(dp)
+> > >         return maxCount
+> > > ```
+> >
+> > Knight Probability in Chessboard https://leetcode.com/problems/knight-probability-in-chessboard/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def knightProbability(self, n: int, k: int, row: int, column: int) -> float:
+> > >         memo = dict()
+> > >         def helper(i, j, leftMoves, memo):
+> > >             if i < 0 or i >= n or j < 0 or j >= n: return 0
+> > >             if leftMoves == 0: return 1
+> > >             if(i, j, leftMoves) in memo: return memo[(i, j, leftMoves)]
+> > >             res = 0
+> > >             for deltaX, deltaY in [(-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1), (-2, 1)]:
+> > >                 newX, newY = i + deltaX, j + deltaY
+> > >                 res += 0.125 * helper(newX, newY, leftMoves - 1, memo)
+> > >             memo[(i, j, leftMoves)] = res
+> > >             return res
+> > >         return helper(row, column, k, memo)
+> > > ```
+> >
+> > Domino and Tromino Tiling https://leetcode.com/problems/domino-and-tromino-tiling/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def numTilings(self, n: int) -> int:
+> > >         if n == 1: return 1
+> > >         if n == 2: return 2
+> > >         if n == 3: return 5
+> > >         dp = [1] * 2 + [2] + [5] + [1] * (n - 3)
+> > >         for i in range(4, n + 1):
+> > >             dp[i] = (2 * dp[i - 1] + dp[i - 3]) % (10 ** 9 + 7)
+> > >         return dp[-1]
+> > > ```
+> >
+> >  Minimum Swaps To Make Sequences Increasing https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def minSwap(self, nums1: List[int], nums2: List[int]) -> int:
+> > >         swap, fix = 1, 0
+> > >         for i in range(1, len(nums1)):
+> > >             if nums1[i - 1] >= nums2[i] or nums2[i - 1] >= nums1[i]:
+> > >                 swap += 1
+> > >             elif nums1[i - 1] >= nums1[i] or nums2[i - 1] >= nums2[i]:
+> > >                 temp = swap
+> > >                 swap = fix + 1
+> > >                 fix = temp
+> > >             else:
+> > >                 minimum = min(swap, fix)
+> > >                 swap = minimum + 1
+> > >                 fix = minimum
+> > >         return min(swap, fix)
+> > > ```
+> >
+> >  Soup Servings
+> >
+> > > ```python
+> > > class Solution:
+> > >     def soupServings(self, n: int) -> float:
+> > >         if n >= 4800: return 1
+> > >         memo = dict()
+> > >         def helper(a, b):
+> > >             if a <= 0: 
+> > >                 if b > 0: return 1
+> > >                 if b <= 0: return 0.5
+> > >             if a > 0: 
+> > >                 if b <= 0: return 0
+> > >             if (a, b) in memo: return memo[(a, b)]
+> > >             res = 0.25 * (helper(a - 100, b) + helper(a - 75, b - 25) + helper(a - 50, b - 50) + helper(a - 25, b - 75))
+> > >             memo[(a, b)] = res
+> > >             return res
+> > >         return helper(n, n)
+> > > ```
+> >
+> > Knight Dialer https://leetcode.com/problems/knight-dialer/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def knightDialer(self, n: int) -> int:
+> > >         memo = dict()
+> > >         def helper(i, j, leftMoves):
+> > >             if i < 0 or i > 3 or j < 0 or j > 2: return 0
+> > >             if i == 3 and (j == 0 or j == 2): return 0
+> > >             if leftMoves == 0: return 1
+> > >             if(i, j, leftMoves) in memo: return memo[(i, j, leftMoves)]
+> > >             res = 0
+> > >             for deltaX, deltaY in [(-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1)]:
+> > >                 newX, newY = i + deltaX, j + deltaY
+> > >                 res += helper(newX, newY, leftMoves - 1)
+> > >             memo[(i, j, leftMoves)] = res
+> > >             return res
+> > >         r = 0
+> > >         for i in range(4):
+> > >             for j in range(3):
+> > >                 r += helper(i, j, n - 1)
+> > >         return r % (10 ** 9 + 7)
+> > > ```
+> >
+> > Number of Dice Rolls With Target Sum https://leetcode.com/problems/number-of-dice-rolls-with-target-sum/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def numRollsToTarget(self, d: int, f: int, target: int) -> int:
+> > >         memo = dict()
+> > >         module = (10 ** 9 + 7)
+> > >         def helper(d, target):
+> > >             if d == 0: 
+> > >                 return 0 if target > 0 else 1
+> > >             if(d, target) in memo: return memo[(d, target)]
+> > >             res = 0
+> > >             for t in range(max(0, target - f), target):
+> > >                 res = (res + helper(d - 1, t)) % module
+> > >             memo[(d, target)] = res
+> > >             return res
+> > >         return helper(d, target)
+> > > ```
+> >
+> > Count Vowels Permutation https://leetcode.com/problems/count-vowels-permutation/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def countVowelPermutation(self, n: int) -> int:
+> > >         rules = dict()
+> > >         rules['a'] = {'e'}
+> > >         rules['e'] = {'a', 'i'}
+> > >         rules['i'] = {'a', 'e', 'o', 'u'}
+> > >         rules['o'] = {'i', 'u'}
+> > >         rules['u'] = {'a'}
+> > >         memo = dict()
+> > >         module = (10 ** 9) + 7
+> > >         def helper(m, lastAlpha):
+> > >             if m == 0: return 1
+> > >             if(m, lastAlpha) in memo: return memo[(m, lastAlpha)]
+> > >             res = 0
+> > >             for curAlpha in rules[lastAlpha]:
+> > >                 res = (res + helper(m - 1, curAlpha)) % module
+> > >             memo[(m, lastAlpha)] = res
+> > >             return res
+> > >         finalRes = 0
+> > >         for firstAlpha in rules.keys():
+> > >             finalRes = (finalRes + helper(n - 1, firstAlpha)) % module
+> > >         return finalRes
+> > > ```
+> >
+> > Dice Roll Simulation https://leetcode.com/problems/dice-roll-simulation/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def dieSimulator(self, n: int, rollMax: List[int]) -> int:
+> > >         facesCount = len(rollMax)
+> > >         dp = [[0 for _ in range(facesCount + 1)] for _ in range(n + 1)]
+> > >         dp[0][facesCount] = 1
+> > >         for j in range(facesCount):
+> > >             dp[1][j] = 1
+> > >         dp[1][facesCount] = facesCount
+> > >         for i in range(2, n + 1):
+> > >             for j in range(0, facesCount):
+> > >                 for k in range(1, rollMax[j] + 1):
+> > >                     if i - k < 0: break
+> > >                     dp[i][j] += dp[i - k][-1] - dp[i - k][j]
+> > >             dp[i][-1] = sum(dp[i])
+> > >         return dp[-1][-1] % (10 ** 9 + 7)
+> > > ```
+> >
+> >  Number of Ways to Stay in the Same Place After Some Steps https://leetcode.com/problems/number-of-ways-to-stay-in-the-same-place-after-some-steps/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def numWays(self, steps: int, arrLen: int) -> int:
+> > >         memo = dict()
+> > >         modulo = (10 ** 9 + 7)
+> > >         def helper(stepsUsed, position):
+> > >             if stepsUsed == 0:
+> > >                 return 1 if position == 0 else 0
+> > >             if(stepsUsed, position) in memo: return memo[(stepsUsed, position)]
+> > >             res = 0
+> > >             res = (res + helper(stepsUsed - 1, position)) % modulo
+> > >             if position != 0: res = (res + helper(stepsUsed - 1, position - 1)) % modulo
+> > >             if position != arrLen - 1: res = (res + helper(stepsUsed - 1, position + 1)) % modulo
+> > >             memo[(stepsUsed, position)] = res
+> > >             return res
+> > >         return helper(steps, 0)
+> > >             
+> > > ```
+> >
+> > Unique Binary Search Trees https://leetcode.com/problems/unique-binary-search-trees/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def numTrees(self, n: int) -> int:
+> > >         dp = [1] * 2 + [0] * (n - 1)
+> > >         for i in range(2, n + 1):
+> > >             for j in range(i + 1):
+> > >                 dp[i] += dp[j - 1] * dp[i - j]
+> > >         return dp[-1]
+> > > ```
+> >
+> > Burst Balloons https://leetcode.com/problems/burst-balloons/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def maxCoins(self, nums: List[int]) -> int:
+> > >         newNums = [1] + [i for i in nums if i > 0] + [1]
+> > >         n = len(newNums)
+> > >         dp = [[0] * n for _ in range(n)]
+> > >         for k in range(2, n):
+> > >             for left in range(n - k):
+> > >                 right = left + k
+> > >                 for i in range(left + 1, right):
+> > >                     dp[left][right] = max(dp[left][right], newNums[left] * newNums[i] * newNums[right] + dp[left][i] + dp[i][right])
+> > >         return dp[0][n - 1]
+> > > ```
+> >
+> > Guess Number Higher or Lower II https://leetcode.com/problems/guess-number-higher-or-lower-ii/
+> >
+> > > ```python
+> > > class Solution:
+> > >     def getMoneyAmount(self, n: int) -> int:
+> > >         memo = dict()
+> > >         def helper(start, end):
+> > >             if start >= end: return 0
+> > >             if(start, end) in memo: return memo[(start, end)]
+> > >             res = float('inf')
+> > >             for i in range(start, end + 1):
+> > >                 res = min(res, i + max(helper(start, i - 1), helper(i + 1, end)))
+> > >             memo[(start, end)] = res
+> > >             return res
+> > >         return helper(1, n)
+> > > ```
+> >
+> > 
+> >
 > > 
 > >
 > > 
