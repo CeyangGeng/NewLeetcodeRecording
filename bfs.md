@@ -25,3 +25,38 @@ class Solution:
         return res
 ```
 
+\199. Binary Tree Right Side View
+In each while loop, create a tmp which include the new level nodes, at the end of the while loop, replace the queue with this tmp list.
+
+```python
+class Solution:
+    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+        if not root: return []
+        res = []
+        queue = [root]
+        while queue:
+            res.append(queue[-1].val)
+            tmp = []
+            for element in queue:
+                if element.left: tmp.append(element.left)
+                if element.right: tmp.append(element.right)
+            queue = tmp
+        return res
+```
+
+\238. Product of Array Except Self
+From left to right, use the list to record the pre product. From right to left, use a variable to record the post product.
+
+```python
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        res = [1]
+        for i in range(1, len(nums)):
+            res.append(res[-1] * nums[i - 1])
+        right = 1
+        for i in range(len(nums) - 1, -1, -1):
+            res[i] *= right
+            right *= nums[i]
+        return res
+```
+

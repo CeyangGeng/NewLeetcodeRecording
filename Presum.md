@@ -35,3 +35,20 @@ class Solution:
         return self.secondSum - self.firstSum
 ```
 
+\523. Continuous Subarray Sum
+
+```python
+class Solution:
+    def checkSubarraySum(self, nums: List[int], k: int) -> bool:
+        curSum = 0
+        preModSum = {0 : -1}
+        for i, num in enumerate(nums):
+            curSum += num
+            mod = curSum % k
+            if mod in preModSum.keys():
+                if i - preModSum[mod] >= 2: return True
+            else:
+                preModSum[mod] = i
+        return False
+```
+
