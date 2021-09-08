@@ -60,3 +60,46 @@ class Solution:
         return res
 ```
 
+\1263. Minimum Moves to Move a Box to Their Target Location
+Use visit to avoid duplication. Always move the person.
+
+```python
+class Solution:
+    def minPushBox(self, grid: List[List[str]]) -> int:
+        m, n = len(grid), len(grid[0])
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == "B": box = (i, j)
+                if grid[i][j] == "T": target = (i, j)
+                if grid[i][j] == "S": person = (i, j)
+        def distance(box):
+            xTarget, yTarget = target
+            xBox, yBox = box
+            return abs(xTarget - xBox) + abs(yTarget - yBox)
+        def isWall(position):
+            x, y = position
+            if x < 0 or x >= m: return True
+            if y < 0 or y >= n: return True
+            return grid[x][y] == "#"
+        queue = [[distance(box), 0, person, box]]
+        visited = {(person, box)}
+        while queue:
+            _, moves, person, box = heapq.heappop(queue)
+            if (box == target):
+                return moves
+            for deltaX, deltaY in [(-1, 0), (1, 0), (0, 1), (0, -1)]:
+                newPerson = (person[0] + deltaX, person[1] + deltaY)
+                if isWall(newPerson): continue
+                if(newPerson == box):
+                    newBox = (box[0] + deltaX, box[1] + deltaY)
+                    if (newPerson, newBox) in visited: continue
+                    visited.add((newPerson, newBox))
+                    if isWall(newBox): continue
+                    heapq.heappush(queue, [distance(newBox) + moves + 1, moves + 1, newPerson, newBox])
+                else:
+                    if (newPerson, box) in visited: continue
+                    visited.add((newPerson, box))
+                    heapq.heappush(queue, [distance(box) + moves, moves, newPerson, box])
+        return -1
+```
+
