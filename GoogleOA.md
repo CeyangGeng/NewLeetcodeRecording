@@ -271,17 +271,115 @@ class Solution:
         return res
 ```
 
+\986. Interval List Intersections(range intersection)
+For this range intersection problem, we need to sort the list first. While iterating the two lists, determine if the two ranges (a1, a2), (b1, b2)have common part, if they have common part, it should be(max(a1, b1), min(a2, b2)). Then we need to move the pointer who has larger end element.
 
+```python
+class Solution:
+    def intervalIntersection(self, firstList: List[List[int]], secondList: List[List[int]]) -> List[List[int]]:
+        firstSize, secondSize = len(firstList), len(secondList)
+        i, j = 0, 0
+        res = []
+        while i < firstSize and j < secondSize:
+            a1, a2 = firstList[i][0], firstList[i][1]
+            b1, b2 = secondList[j][0], secondList[j][1]
+            if a1 <= b2 and b1 <= a2:
+                res.append([max(a1, b1), min(a2, b2)])
+            if a2 <= b2: i += 1
+            else: j += 1
+        return res
+```
 
+\56. Merge Intervals (Range Intersection)
+Firstly sort the list according to the first elements of the ranges.  Append the first range into the res list first, then for the incomming ranges, if the start of the incoming ranges is smaller than or equal to the end of the tail of the res list, we need to update the end of the tail of the res list to the max of these two. If the start of the incomming range is larger than the end of the tail of the res list, we need to append this incoming range into the end of the res list.
 
+```python
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        intervals.sort(key = lambda interval : interval[0])
+        res = []
+        res.append(intervals[0])
+        size = len(intervals)
+        for i in range(1, size):
+            curInterval = intervals[i]
+            start, end = curInterval[0], curInterval[1]
+            curEndInRes = res[-1][1]
+            if start <= curEndInRes:
+                res[-1][1] = max(curEndInRes, end)
+            else: res.append(curInterval)
+        return res
+```
 
+range schedule problems: sort the ranges according to the end of the ranges.
+\253. Meeting Rooms II
 
+```python
+# We need to keep starts and ends lists and then sort them. When come across with a start number, a meeting starts; When come across with an end number, a meeting ends. While iterating the starts list, if a start is smaller than the current end time, we need to add one to the room number, if the start is larger than or equal to the current end time, we need to add one to the end index and don't need to add one to the rooms since one meeting ends and another meeting starts, the total number of the meetings remains the same. Here is the code.
+class Solution:
+    def minMeetingRooms(self, intervals: List[List[int]]) -> int:
+        size = len(intervals)
+        if size == 1: return 1
+        starts, ends = [], []
+        for interval in intervals:
+            start, end = interval
+            starts.append(start)
+            ends.append(end)
+        starts.sort()
+        ends.sort()
+        rooms = 0
+        j = 0
+        for i in range(size):
+            if starts[i] < ends[j]:
+                rooms += 1
+            else:
+                j += 1
+        return rooms
+            
+```
 
+```python
+# For the range intersection problems, we keep a pointer for each range list. When there is a intersection between range(a1, a2) and (b1, b2), we need to put the intersection(max(a1, b1), min(a2, b2)) into the res list. Then we need to move forward the pointer the end of which index is smaller.
+# For the range merge problems, we need to sort the ranges according to the start of the ranges first. Initially, set the current end to the end of the first range. While iterating the later ranges, if the start of the later range is smaller than the curren end, we can merge this range, set the current end to the max(current_end, end_of_later_range); if the start of the later range is larger than or equal to the current end, we can start a new merged range, which means to set the current end to the end of this later range.
+# For the range scheduling problem(like the most unoverlapped ranges number), we can sort the ranges according to the end of the ranges. Initially set the current end to the end of the first range. For the ranges the start element of which is smaller than the current end, we can skip it. For the ranges the start element of which is larger than or equal to the current end, we can start a new range. The essential idea here is the greedy algorithm. Always select the range which ends early.
+# For the hold meeting problem, we need to sort the starts and ends. When finish an end element, it represents this meeting is over. When iterating a start element, it represents a meeting starts.
+# Related problems: labuladong range merge(https://github.com/labuladong/fucking-algorithm/blob/master/%E7%AE%97%E6%B3%95%E6%80%9D%E7%BB%B4%E7%B3%BB%E5%88%97/%E5%8C%BA%E9%97%B4%E8%B0%83%E5%BA%A6%E9%97%AE%E9%A2%98%E4%B9%8B%E5%8C%BA%E9%97%B4%E5%90%88%E5%B9%B6.md), range intersection(https://github.com/labuladong/fucking-algorithm/blob/master/%E7%AE%97%E6%B3%95%E6%80%9D%E7%BB%B4%E7%B3%BB%E5%88%97/%E5%8C%BA%E9%97%B4%E4%BA%A4%E9%9B%86%E9%97%AE%E9%A2%98.md), range scheduling or greedy(https://github.com/labuladong/fucking-algorithm/blob/master/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%B3%BB%E5%88%97/%E8%B4%AA%E5%BF%83%E7%AE%97%E6%B3%95%E4%B9%8B%E5%8C%BA%E9%97%B4%E8%B0%83%E5%BA%A6%E9%97%AE%E9%A2%98.md)(https://leetcode.com/discuss/interview-question/356520)
+```
 
+\435. Non-overlapping Intervals
 
+```python
+class Solution:
+    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
+        intervals.sort(key = lambda interval : interval[1])
+        currentEnd = intervals[0][1]
+        size = len(intervals)
+        count = 1
+        for i in range(1, size):
+            interval = intervals[i]
+            start, end = interval
+            if start >= currentEnd:
+                currentEnd = end
+                count += 1
+        return size - count
+```
 
+\452. Minimum Number of Arrows to Burst Balloons
 
-
+```python
+class Solution:
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        points.sort(key = lambda point : point[1])
+        count = 1
+        curEnd = points[0][1]
+        size = len(points)
+        for i in range(1, size):
+            point = points[i]
+            start, end = point
+            if start > curEnd:
+                curEnd = end
+                count += 1
+        return count
+```
 
 
 
