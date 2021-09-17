@@ -381,6 +381,167 @@ class Solution:
         return count
 ```
 
+\973. K Closest Points to Origin
+
+```python
+# There are two ways to resolve the k smallest elements problems. 
+# The first one is to heapify a list, then heappop the first k elements.
+# The second one is to keep a heap of k size. While the heap size is smaller than k, use heap.heappush to push elements. While the heap size is larger than or equal to the k, use heap.heappushpop to push elements.
+# Solution 1
+class Solution:
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        temp = []
+        for point in points:
+            x, y = point
+            dis = x ** 2 + y ** 2
+            temp.append((dis, x, y))
+        i = 0
+        res = []
+        print(temp)
+        heapify(temp)
+        while i < k:
+            element = heapq.heappop(temp)
+            print(element)
+            dis, x, y = element
+            res.append([x, y])
+            i += 1
+        return res
+  # Solution 2
+  class Solution:
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        res = []
+        for point in points:
+            x, y = point
+            dis = -(x ** 2 + y ** 2)
+            if len(res) < k:
+                heapq.heappush(res, (dis, x, y))
+            else:
+                heapq.heappushpop(res, (dis, x, y))
+        return [[x, y] for _, x, y in res]
+```
+
+\975. Odd Even Jump
+
+```python
+# This problem is awsome!!!!  At first, I thought this problem is very similar with finding the next larger element. But after careful thinking, there is a little difference, since we are not supposed to find the next larget elements, but to find the smallest larger element in the next, so we need to sort the array [(element, index)]!To find the next smallest larger elements, we need to keep a stack to store the index. Whenever come across with an element, it is sure to larger than the previous element since this is a sorted array, we just need to check whether the index of the current element is larger than the tail of the stack, if it is, we update the nextHigher array as nextHigher[stack.pop()] = i, then push the i into the stack. After getting the nextHigher and nextLower array, we need to find whether we can jump to the end from a index. So we can keep another two array, jumpHigher and jumpLower. The end of these two array must be 1 since the end element is already the destination. To find whether we can jump higher from the current index, we just need to check whether we can jump lower from the nextHigher index. Here is the code.
+class Solution:
+    def oddEvenJumps(self, arr: List[int]) -> int:
+        size = len(arr)
+        nextHigher, nextLower = [0] * size, [0] * size
+        stack = []
+        for a, i in sorted([(a, i) for i, a in enumerate(arr)]):
+            while stack and i > stack[-1]:
+                nextHigher[stack.pop()] = i
+            stack.append(i)
+        stack = []
+        for a, i in sorted([(-a, i) for i, a in enumerate(arr)]):
+            while stack and i > stack[-1]:
+                nextLower[stack.pop()] = i
+            stack.append(i)
+        higher, lower = [0] * size, [0] * size
+        higher[-1], lower[-1] = 1, 1
+        for i in range(size - 1)[::-1]:
+            higher[i] = lower[nextHigher[i]]
+            lower[i] = higher[nextLower[i]]
+        return sum(higher)
+```
+
+\482. License Key Formatting
+Think step by step.  Whenever meets with an alpha, we attach that alpha and add 1 to the count. Then we need to determine whether we should attach dash according to whether this is the first part of the string and the lenght of the first part of string equals to the modulo or the length of the current part equals to k.
+
+```python
+class Solution:
+    def licenseKeyFormatting(self, s: str, k: int) -> str:
+        totalCount = len(s)
+        dashCount = s.count('-')
+        alphaNumericCount = totalCount - dashCount
+        mod = alphaNumericCount % k
+        res = ""
+        count = 0
+        isFirstString = True
+        for ch in s:
+            if ch != '-':
+                res += ch
+                count += 1
+                if (isFirstString and count == mod) or count == k:
+                    if isFirstString:
+                        isFirstString = False
+                    res += '-'
+                    count = 0
+        return (res[:-1].upper())
+```
+
+\929. Unique Email Addresses
+
+```python
+class Solution:
+    def numUniqueEmails(self, emails: List[str]) -> int:
+        seen = set()
+        for email in emails:
+            local, domain = email.split('@')
+            actualLocal = ''
+            for ch in local:
+                if ch == '.': continue
+                if ch == '+': break
+                actualLocal += ch
+            seen.add(actualLocal + '@' +domain)
+        return len(seen)
+# Use the split and replace wisely  
+class Solution:
+    def numUniqueEmails(self, emails: List[str]) -> int:
+        seen = set()
+        for email in emails:
+            local, domain = email.split('@')
+            local = local.split('+')[0].replace('.', '')
+            seen.add(local + '@' +domain)
+        return len(seen)
+```
+
+\904. Fruit Into Baskets
+Use sliding window to solve contiguous array related problems.
+
+```python
+class Solution:
+    def totalFruit(self, fruits: List[int]) -> int:
+        res = 0
+        left, right = 0, 0
+        typeCount = 0
+        size = len(fruits)
+        typeCount = dict()
+        while right < size:
+            fruit = fruits[right]
+            typeCount[fruit] = typeCount.get(fruit, 0) + 1
+            if len(typeCount) <= 2: res = max(res, right - left + 1)
+            while left <= right and len(typeCount) == 3:
+                leftFruit = fruits[left]
+                left += 1
+                typeCount[leftFruit] -= 1
+                if typeCount[leftFruit] == 0:
+                    del(typeCount[leftFruit])
+            right += 1
+        return res
+```
+
+##### Min Days to Bloom
+
+```
+Given an array of roses. roses[i] means rose i will bloom on day roses[i]. Also given an int k, which is the minimum number of adjacent bloom roses required for a bouquet, and an int n, which is the number of bouquets we need. Return the earliest day that we can get n bouquets of roses.
+
+Example:
+Input: roses = [1, 2, 4, 9, 3, 4, 1], k = 2, n = 2
+Output: 4
+Explanation:
+day 1: [b, n, n, n, n, n, b]
+The first and the last rose bloom.
+
+day 2: [b, b, n, n, n, n, b]
+The second rose blooms. Here the first two bloom roses make a bouquet.
+
+day 3: [b, b, n, n, b, n, b]
+
+day 4: [b, b, b, n, b, b, b]
+Here the last three bloom roses make a bouquet, meeting the required n = 2 bouquets of bloom roses. So return day 4.
+```
 
 
 
@@ -399,4 +560,12 @@ class Solution:
 
 
 
-Ω
+
+
+
+
+
+
+
+
+
