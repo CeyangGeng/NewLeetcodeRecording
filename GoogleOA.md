@@ -524,7 +524,7 @@ class Solution:
 
 ##### Min Days to Bloom
 
-```
+```python
 Given an array of roses. roses[i] means rose i will bloom on day roses[i]. Also given an int k, which is the minimum number of adjacent bloom roses required for a bouquet, and an int n, which is the number of bouquets we need. Return the earliest day that we can get n bouquets of roses.
 
 Example:
@@ -542,6 +542,132 @@ day 3: [b, b, n, n, b, n, b]
 day 4: [b, b, b, n, b, b, b]
 Here the last three bloom roses make a bouquet, meeting the required n = 2 bouquets of bloom roses. So return day 4.
 ```
+
+```python
+def minDaysBloom(a, k, n): 
+    if not a or k == 0 or n == 0: return 0
+    if len(a) < k * n: return -1
+    # binary search for the left bound
+    left, right = 1, max(a)
+    while left <= right:
+        mid = left + (right - left) // 2
+        if not isValid(a, k, n, mid):
+            left = mid + 1 
+        else: right = mid - 1 
+    return left
+# count the consecutive arrays
+def isValid(flowerDays, size, count, day):
+    curSize, curCount = 0, 0
+    for flowerDay in flowerDays:
+        if flowerDay <= day:
+            curSize += 1 
+        else: curSize = 0
+        if curSize == size:
+            curCount += 1 
+            curSize = 0
+            if curCount == count: return True
+    return False
+```
+
+\300. Longest Increasing Subsequence
+
+```python
+# Time complexity O(N2)
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        size = len(nums)
+        dp = [1] * size
+        for i in range(size):
+            for j in range(i):
+                if nums[i] > nums[j]:
+                    dp[i] = max(dp[i], dp[j] + 1)
+        return max(dp)
+```
+
+```python
+#Binary search to find the left bound
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        size = len(nums)
+        tops = [0] * size
+        piles = 0
+        for num in nums:
+            left, right = 0, piles - 1
+            while left <= right:
+                mid = left + (right - left) // 2
+                if tops[mid] < num: left = mid + 1
+                if tops[mid] > num: right = mid - 1
+                if tops[mid] == num: right = mid - 1
+            if left == piles: 
+                piles += 1
+            tops[left] = num
+        return piles
+```
+
+\543. Diameter of Binary Tree
+The recirsive return result is not the same with the required return result, we should use a helper function to return the recursive return result and update the required result during the recursive, return the required result and the main function.
+
+```python
+class Solution:
+    def diameterOfBinaryTree(self, root: TreeNode) -> int:
+        self.res = 0
+        if not root: return self.res
+        self.helper(root)
+        return self.res
+    def helper(self, root):
+        if not root: return 0
+        left = self.helper(root.left)
+        right = self.helper(root.right)
+        self.res = max(self.res, left + right)
+        return 1 + max(left, right)
+```
+
+tr ie + max diameter of binary tree https://leetcode.com/discuss/interview-question/350363/Google-or-OA-2018-or-Max-Distance
+
+\475. Heaters
+Add two dummy heaters so that each house can between two heaters.
+
+```python
+class Solution:
+    def findRadius(self, houses: List[int], heaters: List[int]) -> int:
+        heaters = [float('-inf')] + heaters + [float('inf')]
+        heaters.sort()
+        houses.sort()
+        i = 0
+        res = 0
+        for house in houses:
+            while heaters[i + 1] < house:
+                i += 1
+            temp = min(house - heaters[i], heaters[i + 1] - house)
+            res = max(res, temp)
+        return res
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
