@@ -261,19 +261,177 @@ def find_min_diff(num):
     return res
 ```
 
+\1249. Minimum Remove to Make Valid Parentheses
 
+```python
+# Use stack to store the index of the invalid parenthesis. When encountering with the left part, put the index of it into the stack. When encountering with the right part, check whether the top of stack is the right part. If it is, pop out this right part; if it isn't, put this invalid right part into the stack.
+class Solution:
+    def minRemoveToMakeValid(self, s: str) -> str:
+        stack = []
+        s = list(s)
+        for i, ch in enumerate(s):
+            if ch == '(':
+                stack.append(i)
+            elif ch == ')':
+                if stack and s[stack[-1]] == '(':
+                    stack.pop()
+                else:
+                    stack.append(i)
+        while stack:
+            s[stack.pop()] = ''
+        return ''.join(s)
+```
 
+\953. Verifying an Alien Dictionary
 
+```python
+# Use zip to form pairs. Iterating the two word in zip pairs. For the characters at the same index of the first word and the second word, if the first character is smaller than the second character, then we can return true; if the first character is larger than the second character, then we can return false; only when these two characters are the same, we need to proceed. If we still can not tell which one is larger, it shows that one of the word is starts with the other. Then we only need to compare the length of these two words. If the first word is longer, we need to return False, otherwise we need to return True.
+class Solution:
+    def isAlienSorted(self, words: List[str], order: str) -> bool:
+        pairs = list(zip(words, words[1:]))
+        dic = dict()
+        for i, ch in enumerate(order):
+            dic[ch] = i
+        for pair in pairs:
+            if not self.isValidPair(pair, dic):
+                return False
+        return True
+    def isValidPair(self, pair, dic):
+        first, second = pair
+        size1, size2 = len(first), len(second)
+        for i in range(min(size1, size2)):
+            c1, c2 = first[i], second[i]
+            if dic[c1] < dic[c2]: 
+                return True
+            if dic[c1] > dic[c2]:
+                return False
+        if size1 > size2: return False
+        return True
+```
 
+\680. Valid Palindrome II
 
+```python
+class Solution:
+    def validPalindrome(self, s: str) -> bool:
+        left, right = 0, len(s) - 1
+        while left < right:
+            if s[left] != s[right]:
+                temp1 = s[left : right]
+                temp2 = s[left + 1: right + 1]
+                return temp1 == temp1[::-1] or temp2 == temp2[::-1]
+            left += 1
+            right -= 1
+        return True
+```
 
+\1762. Buildings With an Ocean View
 
+```python
+# Monotonic stack
+class Solution:
+    def findBuildings(self, heights: List[int]) -> List[int]:
+        res = []
+        size = len(heights)
+        stack = []
+        for i in range(size - 1, -1, -1):
+            height = heights[i]
+            while stack and height > stack[-1]:
+                stack.pop()
+            if stack: continue
+            res.append(i)
+            stack.append(height)
+        return res[::-1]
+```
 
+\1570. Dot Product of Two Sparse Vectors
 
+```python
+# Use dictionary to record the index and the number. While iterating the key value pair in one vector, we need to check whether this key also exists in the self dictionary. If it doesn't, we don't need to do the production and sum.
+class SparseVector:
+    def __init__(self, nums: List[int]):
+        self.dic = dict()
+        for i, num in enumerate(nums):
+            self.dic[i] = num
+        
 
+    # Return the dotProduct of two sparse vectors
+    def dotProduct(self, vec: 'SparseVector') -> int:
+        res = 0
+        for key, val in vec.dic.items():
+            if key in self.dic:
+                res += val * self.dic[key]
+        return res
+```
 
+\973. K Closest Points to Origin
 
+```python
+# Use heapq
+class Solution:
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        heap = []
+        for x, y in points:
+            dis = -(x ** 2 + y ** 2)
+            if len(heap) < k:
+                heapq.heappush(heap, (dis, x, y))
+            else:
+                heapq.heappushpop(heap, (dis, x, y))
+        return [[x, y] for _, x, y in heap]
+```
 
+\426. Convert Binary Search Tree to Sorted Doubly Linked List
 
+```python
+class Solution:
+    def treeToDoublyList(self, root: 'Node') -> 'Node':
+        if not root: return None
+        leftHead = self.treeToDoublyList(root.left)
+        rightHead = self.treeToDoublyList(root.right)
+        root.left = root
+        root.right = root
+        return self.connect(self.connect(leftHead, root), rightHead)
+    def connect(self, n1, n2):
+        if not n1: return n2
+        if not n2: return n1
+        tail1 = n1.left
+        tail2 = n2.left
+        tail1.right = n2
+        n2.left = tail1
+        tail2.right = n1
+        n1.left = tail2
+        return n1
+```
 
+\415. Add Strings
+
+```python
+# Keep a carry
+class Solution:
+    def addStrings(self, num1: str, num2: str) -> str:
+        num1, num2 = list(num1), list(num2)
+        add = 0
+        if len(num1) > len(num2): num1, num2 = num2, num1
+        size = len(num1)
+        size2 = len(num2)
+        res = ""
+        for i in range(-1, -size - 1, -1):
+            n1, n2 = int(num1[i]), int(num2[i])
+            temp = n1 + n2 + add
+            remain = temp % 10
+            quotient = temp // 10
+            add = quotient
+            res = str(remain) + res
+        if len(num2) > len(num1):
+            for i in range(-size - 1, -size2 - 1, -1):
+                n = int(num2[i])
+                temp = n + add
+                quotient = temp // 10
+                remain = temp % 10
+                add = quotient
+                res = str(remain) + res
+        if add != 0:
+            res = str(add) + res
+        return res
+```
 
