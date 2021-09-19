@@ -643,13 +643,112 @@ class Solution:
         return res
 ```
 
+https://www.1point3acres.com/bbs/thread-797006-1-1.html
 
+```python
+# 1. find min max sum pair. To find the pairs with minimum differences, we need to sort the nums first, use two pointers at the front and the end, and move them forward each other.
+def findMinMaxPair(A):
+  A.sort()
+  res = float('-inf')
+  size = len(A)
+  i, j = 0, size - 1
+  while i < j:
+    curSum = A[i] + A[j]
+    if curSum > res:
+      res = curSum
+  return res
 
+```
 
+```python
+#2. get the modulo and the quotient
+def find_min_diff(num):
+    size = len(str(num))
+    res = float('inf')
+    for i in range(1, size):
+        pre = num // (10 ** i)
+        suffix = num % (10 ** i)
+        res = min(res, abs(pre - suffix))
+    return res
+```
 
+https://www.1point3acres.com/bbs/thread-798477-1-1.html
 
+```python
+# Whenever meet with the absolute value related problems, we need to remove the absolute and discuss the result according to different condition.
+# It requires that |i - j| = |A[i] - A[j]|, there can be two situations. The first one is i - j = A[i] - A[j], then we can get it requires i - A[i] = j - A[j]. The second one is i - j = A[j] - A[i], it requires i + A[i] = j + A[j]. 
+def max_diff(nums):
+    diff_dic = dict()
+    sum_dic = dict()
+    left, right = 0, 0
+    for i, num in enumerate(nums):
+        diff = i - nums[i]
+        summ = i + nums[i]
+        if diff in diff_dic:
+            if i - diff_dic[diff] > right - left:
+                left, right = diff_dic[diff], i
+        else:
+            diff_dic[diff] = i
+        if summ in sum_dic:
+            if i - sum_dic[summ] > right - left:
+                left, right = sum_dic[summ], i
+        else:
+            sum_dic[summ] = i
+    print(diff_dic, sum_dic)
+    return left, right
+```
 
+```python 
+# remove b O(N2)
+def min_cost(s):
+    size = len(s)
+    res = float('inf')
+    for i in range(size):
+        for j in range(i - 1, size):
+            pre = s[:i]
+            mid = s[i : j + 1]
+            post = s[j + 1:] if j < size else ""
+            print("pre:",pre)
+            print("mid:",mid)
+            print("post",post)
+            preCount = i
+            midCount = mid.count('b')
+            postCount = size - 1 - j
+            print(preCount, midCount, postCount)
+            res = min(res, preCount + 2 * midCount + postCount)
+    return res
+  
+```
 
+```python
+# O(N)
+def countPreB(s):
+    count = 0
+    preCount = [0] * len(s)
+    for i, ch in enumerate(s):
+        if ch == 'b':
+            count += 1
+        preCount[i] = count
+    return preCount
+def min_cost(s):
+    n = len(s)
+    pre = countPreB(s)
+    # the first and the last element are not removed
+    res = 2 * pre[n - 1]
+    # only remove the first element
+    res = min(res, 1 - 2 * (pre[0] - pre[n - 1]))
+    # only remove the last element
+    if len(pre) > 1:
+        res = min(res, 1 + 2 * pre[n - 2])
+    dp = [0] * n
+    dp[0] = 1 - 2 * pre[1]
+    for i in range(1, n - 1):
+        dp[i] = min(dp[i - 1], i + 1 - 2 * pre[i + 1])
+    for j in range(1, n):
+        localCost = n - j + 2 * pre[j] + dp[j - 1]
+        res = min(res, localCost)
+    return res
+```
 
 
 

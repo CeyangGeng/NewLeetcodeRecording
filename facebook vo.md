@@ -233,11 +233,33 @@ class Solution:
                 right -= 1
 ```
 
+![image-20210918131258531](/Users/gengceyang/Library/Application Support/typora-user-images/image-20210918131258531.png)
 
+```python
+def findMinMaxPair(A):
+  A.sort()
+  res = float('-inf')
+  size = len(A)
+  i, j = 0, size - 1
+  while i < j:
+    curSum = A[i] + A[j]
+    if curSum > res:
+      res = curSum
+  return res
+```
 
+![image-20210918131540524](/Users/gengceyang/Library/Application Support/typora-user-images/image-20210918131540524.png)
 
-
-
+```python
+def find_min_diff(num):
+    size = len(str(num))
+    res = float('inf')
+    for i in range(1, size):
+        pre = num // (10 ** i)
+        suffix = num % (10 ** i)
+        res = min(res, abs(pre - suffix))
+    return res
+```
 
 
 
