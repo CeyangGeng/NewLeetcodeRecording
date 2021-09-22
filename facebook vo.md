@@ -435,3 +435,360 @@ class Solution:
         return res
 ```
 
+\301. Remove Invalid Parentheses
+
+```python
+# Use count to determine when there is one more right part.
+# After finding the position making the count negative, we can remove any right part before this position, then the remain string should be deal with recursive. 
+# To avoid duplication, we need to keep two more information, the first one is the last_i which makes the count negative, and the i in the new iteration starts from i; the second one is the last_j to avoid remove two parenthesis just in different order.
+# After finding the position making the count negative, we just need to iterate the j from last_j to i(inclusive). After finishing iterating the j, we can return since the i in the later position making count negative is left to recursive to deal with.
+
+class Solution:
+    def removeInvalidParentheses(self, s: str) -> List[str]:
+        res = []
+        def helper(last_i, last_j, string, parenthesis, res):
+            count = 0
+            for i in range(last_i, len(string)):
+                if string[i] == parenthesis[0]:
+                    count += 1
+                elif string[i] == parenthesis[1]:
+                    count -= 1
+                if count >= 0: continue
+                for j in range(last_j, i + 1):
+                    if string[j] == parenthesis[1] and (j == last_j or (j > last_j and string[j] != string[j - 1])):
+                        newString = string[:j] + string[j + 1:]
+                        helper(i, j, newString, parenthesis, res)
+                return
+            reverse = string[::-1]
+            if parenthesis[0] == '(':
+                parenthesis = [')', '(']
+                helper(0, 0, reverse, parenthesis, res)
+            else:
+                res.append(reverse)
+        helper(0, 0, s, ['(', ')'], res)
+        return res
+```
+
+\199. Binary Tree Right Side View
+
+```python
+class Solution:
+    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+        res = []
+        if not root: return res
+        queue = [root]
+        while queue:
+            res.append(queue[-1].val)
+            temp = []
+            for node in queue:
+                if node.left: temp.append(node.left)
+                if node.right: temp.append(node.right)
+            queue = temp
+        return res
+```
+
+\636. Exclusive Time of Functions
+Add the interval to each of the start timestamp.
+
+```python
+class Solution:
+    def exclusiveTime(self, n: int, logs: List[str]) -> List[int]:
+        dic = dict()
+        stack = []
+        for log in logs:
+            funcID, event, timeStamp = log.split(":")
+            funcID = int(funcID)
+            timeStamp = int(timeStamp)
+            if event == "start":
+                stack.append(timeStamp)
+            elif event == "end":
+                dic[funcID] = dic.get(funcID, 0)
+                duration = timeStamp - stack.pop() + 1
+                dic[funcID] += duration
+                temp = []
+                for time in stack:
+                    temp.append(time + duration)
+                stack = temp
+                    
+        res = []
+        for i in range(len(dic)):
+            res.append(dic[i])
+        return res
+```
+
+\236. Lowest Common Ancestor of a Binary Tree
+Record the parent of each node, then find the ancestors of p iteratively, find the ancestors of q iteratively, find if they have common ancestors.
+
+```python
+
+class Solution:
+    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+        dic = dict()
+        dic[root] = None
+        stack = []
+        stack.append(root)
+        while p not in dic or q not in dic:
+            node = stack.pop()
+            if node.left: 
+                dic[node.left] = node
+                stack.append(node.left)
+            if node.right: 
+                dic[node.right] = node
+                stack.append(node.right)
+        parents = set()
+        while p:
+            parents.add(p)
+            p = dic[p]
+        while q not in parents:
+            q = dic[q]
+        return q
+        
+```
+
+\238. Product of Array Except Self
+Compute the pre product and post product.
+
+```python
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        pre = [1]
+        size = len(nums)
+        for i in range(size - 1):
+            num = nums[i]
+            pre.append(pre[-1] * num)
+        post = nums[-1]
+        for i in range(size - 2, -1, -1):
+            pre[i] *= post
+            post *= nums[i]
+        return pre
+```
+
+\721. Accounts Merge
+Use the common email as connection to construct graph. Construct the emails_accounts_dictionary first. Then for each account, use each email to find the neighbor. Always add element to visited at first visit.
+
+```python
+class Solution:
+    def accountsMerge(self, accounts: List[List[str]]) -> List[List[str]]:
+        size = len(accounts)
+        visited_accounts = [False] * size
+        emails_accounts_map = defaultdict(list)
+        for i, account in enumerate(accounts):
+            for j in range(1, len(account)):
+                email = account[j]
+                emails_accounts_map[email].append(i)
+        def dfs(i, emails):
+            account = accounts[i]
+            for j in range(1, len(account)):
+                email = account[j]
+                emails.add(email)
+                for neighbor in emails_accounts_map[email]:
+                    if not visited_accounts[neighbor]:
+                        visited_accounts[neighbor] = True
+                        dfs(neighbor, emails)
+        res  = []
+        for i, account in enumerate(accounts):
+            if visited_accounts[i]: continue
+            visited_accounts[i] = True
+            emails = set()
+            name = account[0]
+            dfs(i, emails)
+            res.append([name] + sorted(list(emails)))
+        return res
+```
+
+\543. Diameter of Binary Tree
+The recursive variable is different from what the problem ask for, so we need a helper function. In the main function, maintain a global variable to be returned, update this global variable in the helper function. The return value of the helper function should be the longest path but not the diameter. Another key point is that for the node as a root, the return of helper(node.left) = longest path in the left node(including), the return of helper(node.right) = longest path in right. When calculating the diameter for the root, it should be left + right, we don't need to add another one.
+
+```python
+class Solution:
+    def diameterOfBinaryTree(self, root: TreeNode) -> int:
+        self.d = 0
+        if not root: return self.d
+        left = self.helper(root.left)
+        right = self.helper(root.right)
+        return max(self.d, left + right)
+    def helper(self, node):
+        if not node: return 0
+        left, right = 0, 0
+        if node.left: left = self.helper(node.left)
+        if node.right : right = self.helper(node.right)
+        self.d = max(self.d, left + right)
+        return max(left, right) + 1
+```
+
+\227. Basic Calculator II
+The basic idea is keep two variable sign and number, when come across with numeric string, add it to number, when come across with sign, calculate the sign and number. If the sign is + or -, pretty easy. If the sign is '*', we need to pop out the number, and multiply it with the number. If the sign is '/', we need to pop out the previous number, if the previous number is negative and the modulo of the previous number divide current number is not zero, we need to add one to quotient of previous number dividing current number. Another key point is, there are severl if condition, the first if is to determine whether the character is numeric, the second if is to determine whether the current character is non-numeric, then we need to calculate the result now, but another very tricky place is that if we only rely on the sign to hint the calculation, the final caculation can not be guaranteed. So in the non-numeric if condition, we need to or with the i == len(s) - 1. But before calculation, we need to gurantee that this final character string is been considered, so the first two conditions are if and if, but not if and elif. Another tricky place is that since we need to check whether i is the last index of the string, so we need to use s.strip to remove the leading and ending blank space, the code is s = s.strip().
+
+```python
+class Solution:
+    def calculate(self, s: str) -> int:
+        s = s.strip()
+        sign, num = '+', 0
+        stack = []
+        for i, ch in enumerate(s):
+            if ch == ' ': continue
+            if ch.isnumeric():
+                num = num * 10 + int(ch)
+            if (not ch.isnumeric()) or i == len(s) - 1 :
+                if sign == '+': stack.append(num)
+                elif sign == '-': stack.append(-num)
+                elif sign == '*': stack.append(num * stack.pop())
+                elif sign == '/': 
+                    pre = stack.pop()
+                    if pre < 0 and pre % num != 0: 
+                        stack.append(pre // num + 1)
+                    else: stack.append(pre // num)
+                
+                sign = ch
+                num = 0
+        return sum(stack)
+```
+
+\670. Maximum Swap
+To get the maximum number with only one swap, we need to find out the later larger index and iterate from left to right. If the current number is the largest one in the numbers behind it self(including itself), we don't need to swap for this index and proceed. To find out the later larger index, we need to iterate from the tail to the head. The larger index of the last number is the index of itself. One corner case is that if there are multiple same largest number in the later positions, we need to choose the right most one. E.g., 1993, for the number 1 at the index 0, we need to swap it with the second nine but not the first nine, so we need to update the postLargerValueIndex only when the current number is larger thatn all of the numbers behind it.  After getting the later larger index, we need to iterate from the left to the right, if the current number is equal to the later larger number, we skip this position until we find out the current number is smaller than the later larger number.
+
+```python
+class Solution:
+    def maximumSwap(self, num: int) -> int:
+        nums = []
+        while num:
+            mod = num % 10
+            num = num // 10
+            nums = [mod] + nums
+        size = len(nums)
+        laterMaxValueIndex = []
+        laterMaxValueIndex.append(size - 1)
+        postMaxValueIndex = size - 1
+        for i in range(size - 2, -1, -1):
+            curNum = nums[i]
+            if curNum > nums[postMaxValueIndex]: postMaxValueIndex = i
+            laterMaxValueIndex = [postMaxValueIndex] + laterMaxValueIndex
+        res = 0
+        print(laterMaxValueIndex)
+        for i, num in enumerate(laterMaxValueIndex):
+            first, second = nums[i], nums[num]
+            if first == second: continue
+            else: 
+                nums[i], nums[num] = nums[num], nums[i]
+                break
+        print(nums)
+        for num in nums:
+            res = res * 10 + num
+        return res
+```
+
+\249. Group Shifted Strings
+Since "ba" is in the same group with "az", we need to use (26 + ord(string[i]) - ord(string[i - 1])) % 26 to find the members in the same group. Another key point is that to concact element to the current tuple and get a nuew tuple, we need to use tuple += (element, )
+
+```python
+class Solution:
+    def groupStrings(self, strings: List[str]) -> List[List[str]]:
+        dic = defaultdict(list)
+        for string in strings:
+            key = ()
+            for i in range(1, len(string)):
+                temp = (26 + (ord(string[i]) - ord(string[i - 1]))) % 26
+                key += (temp, )
+            dic[key].append(string)
+        return list(dic.values())
+```
+
+\140. Word Break II
+Basic idea for word break is to concact the pre valid word to the left behind words list. The basic case is when the string is empty, we need to return list with empty string but not an empty list. 
+
+```python
+class Solution:
+    def wordBreak(self, s: str, wordDict: List[str]) -> List[str]:
+        if not s: return ['']
+        wordDict = set(wordDict)
+        memo = {}
+        size = len(s)
+        res = []
+        for i in range(size):
+            pre = s[:i + 1]
+            validRight = []
+            if pre in wordDict:
+                validRight = self.wordBreak(s[i + 1:], wordDict)
+            for valid in validRight:
+                if not valid: res.append(pre)
+                else: res.append(pre + ' ' + valid)
+        return res
+```
+
+```python
+# Use memo to avoid duplicate calculation
+class Solution:
+    def wordBreak(self, s: str, wordDict: List[str]) -> List[str]:
+        self.wordDict = wordDict
+        self. memo = {}
+        return self.helper(s)
+    def helper(self, s):
+        if not s: return ['']
+        if s in self.memo: return self.memo[s]
+        res = []
+        for i in range(len(s)):
+            word = s[:i + 1]
+            if word in self.wordDict:
+                leftValidWord = self.helper(s[i + 1:])
+                for valid in leftValidWord:
+                    if not valid: res.append(word)
+                    else: res.append(word + " " + valid)
+        self.memo[s] = res
+        return res
+```
+
+\67. Add Binary
+Make up 0 for the length difference.
+
+```python
+class Solution:
+    def addBinary(self, a: str, b: str) -> str:
+        if len(a) < len(b): a, b = b, a
+        lenDiff = len(a) - len(b)
+        b = "0" * lenDiff + b
+        carrier = 0
+        res = ""
+        for i in range(-1, -len(a) - 1, -1):
+            first, second = int(a[i]), int(b[i])
+            remain = (first + second + carrier) % 2
+            carrier = (first + second + carrier) // 2
+            res = str(remain) + res
+        if carrier > 0:
+            res = str(carrier) + res
+        return res
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
