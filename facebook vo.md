@@ -758,21 +758,664 @@ class Solution:
         return res
 ```
 
+\207. Course Schedule
 
+```python
+# topologic sort: keep a degree array and adjacent array. Initially, we need to put the 0 degree courses into the list, after removing this course from the queue, remove one input degree for the successive courses. Finally, check if all the number of  courses ever been to queue equals to total number.
+class Solution:
+    def canFinish(self, n: int, prerequisites: List[List[int]]) -> bool:
+        adj = [[] for i in range(n)]
+        degree = [0] * n
+        for second, first in prerequisites:
+            adj[first].append(second)
+            degree[second] += 1
+        queue = []
+        for i in range(n):
+            if degree[i] == 0: queue.append(i)
+        count = 0
+        while queue:
+            c = queue.pop(0)
+            count += 1
+            for neighbor in adj[c]:
+                degree[neighbor] -= 1
+                if degree[neighbor] == 0:
+                    queue.append(neighbor)
+        return count == n
+```
 
+```python
+# dfs: use color to differentiate the visited, hasn't visited, is visiting
+class Solution:
+    def canFinish(self, n: int, prerequisites: List[List[int]]) -> bool:
+        preAdj = [[] for _ in range(n)]
+        for second, first in prerequisites:
+            preAdj[second].append(first)
+        visited = [0] * n
+        for i in range(n):
+            if self.dfs(i, visited, preAdj): return False
+        return True
+    def dfs(self, n, visited, preAdj):
+        if visited[n] == 1: return False
+        if visited[n] == 2: return True
+        visited[n] = 2
+        for pre in preAdj[n]:
+            if self.dfs(pre, visited, preAdj):
+                return True
+        visited[n] = 1
+        return False
+```
 
+\269. Alien Dictionary
 
+```python
+# Construct the adj and degree dictionary, fill this dicionary while comparint two adjacent words. There is a corner case when the first word is longer than the second word, and the last comparing characters are the same, it shows that this order is fake, we should return empty string directly. Another key point is that we need to check whether there is a circle in this DAG, if there is a circle in the DAG, we also need to return an empty string.
+class Solution:
+    def alienOrder(self, words: List[str]) -> str:
+        degree = dict()
+        for word in words:
+            for ch in word:
+                degree[ch] = 0
+        pairs = list(zip(words, words[1:]))
+        adjs = defaultdict(list)
+        for first, second in pairs:
+            size = min(len(first), len(second))
+            for i in range(size):
+                a, b = first[i], second[i]
+                if a != b:
+                    adjs[a].append(b)
+                    degree[b] += 1
+                    break
+                if len(first) > len(second) and i == size - 1: return ""
+        queue = []
+        for key, val in degree.items():
+            if val == 0: queue.append(key)
+        res = ""
+        while queue:
+            ch = queue.pop(0)
+            res += ch
+            for neighbor in adjs[ch]:
+                degree[neighbor] -= 1
+                if degree[neighbor] == 0:
+                    queue.append(neighbor)
+        return res if len(res) == len(degree) else ""
+```
 
+\398. Random Pick Index
 
+```python
+#Use a dictionary to store the target indexes, and use random to pick up indexes randomly.
+class Solution:
 
+    def __init__(self, nums: List[int]):
+        self.dic = defaultdict(list)
+        for i, num in enumerate(nums):
+            self.dic[num].append(i)
+        
 
+    def pick(self, target: int) -> int:
+        indexes = self.dic[target]
+        size = len(indexes)
+        i = random.randint(0, size - 1)
+        return indexes[i]
+```
 
+```
 
+```
 
+\124. Binary Tree Maximum Path Sum
 
+```python
+# This question is similar to the max diameter of binary tree. The return type of the helper function is different from what asked. Basically, the update always include the root + left + right, but the return type of the helper function only includes one side max(left, right) + root
+# For the max diameter question, since the left and right are equals to or larger than the 0, so when udpate the maxDiameter, we can use left = inorder(root.left), right = inorder(root.right), maxDiameter = max(maxDiameter, left + right), and the return of the helper inorder function should be 1 + max(left, right), the key noting here is that the left and right are non-negative numbers.
+# For this max path sum question, since there can be nodes of negative values, the left should be left = max(0, inorder(root.left)) THIS IS PRETTY IMPORTANT, because if the sum of the left path is negative,we don't want to add it to the final sum, the right should be right = max(0, inorder(root.right)), THIS IS PRETTY CRITICAL, since if the right path is negative, we don't want to add it to the final sum. then the update of the maxSum should be maxSum = max(maxSum, root.val + left + right), the return of the inorder helper function should be max(left, righht) + node.val
+class Solution:
+    def maxPathSum(self, root: Optional[TreeNode]) -> int:
+        self.maxSum = float('-inf')
+        left = max(0, self.inorder(root.left))
+        right = max(0, self.inorder(root.right))
+        return max(self.maxSum, root.val + left + right)
+    def inorder(self, node):
+        if not node: return 0
+        left = max(0, self.inorder(node.left))
+        right = max(0, self.inorder(node.right))
+        self.maxSum = max(self.maxSum, node.val + left + right)
+        return max(left, right) + node.val
+```
 
+\317. Shortest Distance from All Buildings
 
+```python
+# We need to keep a distance and reach array to record the distance between the 0 positions and a building and the counted buildings, if the reached buildings count of the current position is different from the current buildings count, it shows that this position can not be reached by every building, so we can stop iterating.
+class Solution:
+    def shortestDistance(self, grid: List[List[int]]) -> int:
+        m, n = len(grid), len(grid[0])
+        print(m, n)
+        distance = [[0] * n for _ in range(m)]
+        reached = [[0] * n for _ in range(m)]
+        visitedBuildings = 0
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 1:
+                    visited = [[False] * n for _ in range(m)]
+                    visitedBuildings += 1
+                    level = 1
+                    queue = [(i, j)]
+                    while queue:
+                        size = len(queue)
+                        for k in range(size):
+                            x, y = queue.pop(0)
+                            for deltaX, deltaY in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                                newX, newY = x + deltaX, y + deltaY
+                                if 0 <= newX < m and 0 <= newY < n and grid[newX][newY] == 0 and not visited[newX][newY]:
+                                    visited[newX][newY] = True
+                                    distance[newX][newY] += level
+                                    reached[newX][newY] += 1
+                                    if reached[newX][newY] == visitedBuildings:
+                                        queue.append((newX, newY))
+                        level += 1
+        shortest = float('inf')
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == 0 and reached[i][j] == visitedBuildings:
+                    shortest = min(shortest, distance[i][j])
+        return shortest if shortest < float('inf') else -1
+```
 
+\173. Binary Search Tree Iterator
+
+```python
+# Always push the left node to the stack, when the node has no left child, push the right child of this node
+class BSTIterator:
+
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack = list()
+        self.pushAll(root)
+        
+
+    def next(self) -> int:
+        node = self.stack.pop()
+        self.pushAll(node.right)
+        return node.val
+        
+        
+    def hasNext(self) -> bool:
+        return len(self.stack) > 0
+    
+    def pushAll(self, node):
+        while node:
+            self.stack.append(node)
+            node = node.left
+```
+
+\71. Simplify Path
+
+```python
+# same idea as equation, pair the slash with the directory name
+# There are so many corner cases: 1. we can not pop from empty list. 2. The different cases is better to be dealt with elif. 3. When meet the slash, we need to calculate the previous result, if the previous name is .., we need to pop out the last element in the stack, if the previous name is valid name, we need to append it to the stack, reset the name to the empty string. When meet the consecutive slashes, we only need to deal with the first slash. Whenever we rely on the sign to calculate the previous result, there must be some edge cases when there are names left in the end. If the left names is .., we need to pop the stack if the stack is not empty. If the name is not '..', '.' and NOT "", (this empty string is very critical since it is our reset status), we need to append this name to the stack.
+class Solution:
+    def simplifyPath(self, path: str) -> str:
+        stack = []
+        name = ''
+        for i in range(1, len(path)):
+            ch = path[i]
+            if ch != '/':
+                name += ch
+            if ch == '/':
+                if i > 0 and path[i- 1] == '/':
+                    continue
+                elif name == '..': 
+                    if stack:
+                        stack.pop()
+
+                elif name != '.' and name != '..':
+                    stack.append(name)
+                name  = ''
+        if name == '..':
+            if stack:
+                stack.pop()
+        elif name and name != '.': stack.append(name)
+        print(stack)
+        return '/'+'/'.join(stack) 
+                
+```
+
+\29. Divide Two Integers
+
+```python
+# Always try the largest number that can be substracted from the dividened, add 1 << (i - 1 )to the res, when the divisor is larger than the dividened, the divisor has been left shifted by i bits. After getting this largest substracted number, we need to substract this largest substracted number from the dividend, and find the next largest substracted number for this updated dividened.
+class Solution:
+    def divide(self, dividend: int, divisor: int) -> int:
+        isPositive = (dividend < 0) is (divisor < 0)
+        dividend, divisor = abs(dividend), abs(divisor)
+        res = 0
+        while dividend >= divisor:
+            temp = divisor
+            i = 0
+            while dividend >= temp:
+                temp = temp << 1
+                i += 1
+            res += 1 << (i - 1)
+            dividend -= temp >> 1
+        res = res if isPositive else -res
+        return min(max(-(1 << 31), res), (1 << 31) - 1)
+```
+
+\65. Valid Number
+
+```python
+# intuitive solutions
+class Solution:
+    def isNumber(self, s: str) -> bool:
+        s = s.lower()
+        print(s)
+        if s[-1] == 'e' or s[0] == 'e': return False
+        splitted = s.split("e")
+        print(splitted)
+        size = len(splitted)
+        if size > 2: return False
+        if size == 1: 
+            number = splitted[0]
+            return self.isValidInteger(number) or self.isValidDecimal(number)
+        else:
+            integer, decimal = splitted
+            return (self.isValidInteger(integer) or self.isValidDecimal(integer)) and self.isValidInteger(decimal)
+    def isValidInteger(self, integer):
+        if not integer: return True
+        if integer[0] in {"+", "-"}:
+            integer = integer[1:]
+            if not integer: return False
+        plusSignCount = integer.count("+")
+        minusSignCount = integer.count("-")
+        if plusSignCount + minusSignCount > 0: return False
+        for ch in integer:
+            if not ch.isnumeric(): return False
+        return True
+    def isValidDecimal(self, decimal):
+        if not decimal: return True
+        if decimal == '.': return False
+        if decimal[0] in {"+", "-"}: 
+            decimal = decimal[1:]
+            if decimal == '.' or not decimal: return False 
+        plusSignCount = decimal.count("+")
+        minusSignCount = decimal.count("-")
+        if plusSignCount + minusSignCount > 0: return False
+        splitted = decimal.split(".")
+        size = len(splitted)
+        if size > 2: return False
+        for digits in splitted:
+            for digit in digits:
+                if not digit.isnumeric(): return False
+        return True
+```
+
+```python
+# If the +/- appears at the middle of the number, we need to gurantee that it must be after the e.
+# If the e appears, ther must be numbers before and after the e, and e can not appear more than once.
+# If there is a dot, means there is a decimal number, it must before the e, and this dot can only appear once.
+# If there are other non numberic character, return False directly.
+class Solution:
+    def isNumber(self, s: str) -> bool:
+        s = s.strip().lower()
+        print(s)
+        metE, metDigit, metDot = False, False, False
+        for i, ch in enumerate(s):
+            if ch in {"+", "-"}:
+                if i > 0 and s[i - 1] != "e": return False
+            elif ch == "e":
+                print(ch)
+                if metE or not metDigit: return False
+                metDigit = False
+                metE = True
+            elif ch == ".":
+                if metE or metDot: return False
+                metDot = True
+            elif ch.isnumeric():
+                metDigit = True
+            else: return False
+        return metDigit
+
+```
+
+\139. Word Break
+
+```python
+# Use the start index as the dfs parameters.
+# memo
+class Solution:
+    def wordBreak(self, s: str, wordDict: List[str]) -> bool:
+        self.wordDict = wordDict
+        self.memo = dict()
+        self.s = s
+        return self.dfs(0)
+    def dfs(self, index):
+        if index == len(self.s): return True
+        if index in self.memo: return self.memo[index]
+        size = len(self.s)
+        res = False
+        for i in range(index, size):
+            cur = self.s[index : i + 1]
+            if cur in self.wordDict:
+                if self.dfs(i + 1): 
+                    res = True
+                    break
+        self.memo[index] = res
+        return res
+```
+
+```python
+# dp solution
+# For every index and character in s, we can iterate over the wordDict to see if the word equals to the s[i - len(word) + 1 : i + 1], if it does, and the dp[i - len(word)] = true, we can update dp[i] = True. dp[i] means whether the substring s[: i + 1] can make up by the words in the wordDict. 
+class Solution:
+    def wordBreak(self, s: str, wordDict: List[str]) -> bool:
+        size = len(s)
+        dp = [False] * size
+        for i in range(size):
+            for word in wordDict:
+                if word == s[i - len(word) + 1: i + 1] and (i - len(word) == -1 or dp[i - len(word)]):
+                    dp[i] = True
+        return dp[-1]
+```
+
+\1382. Balance a Binary Search Tree
+
+```python
+# Always pick the middle node as the root
+class Solution:
+    def balanceBST(self, root: TreeNode) -> TreeNode:
+        lis = []
+        def inorder(node):
+            if node.left:inorder(node.left)
+            lis.append(node.val)
+            if node.right: inorder(node.right)
+        inorder(root)
+        
+        def helper(lis):
+            if not lis: return None
+            size = len(lis)
+            mid = size // 2
+            midVal = lis[mid]
+            node = TreeNode(midVal)
+            node.left = helper(lis[:mid])
+            node.right = helper(lis[mid + 1:])
+            return node
+        return helper(lis)
+```
+
+\708. Insert into a Sorted Circular Linked List
+
+```python
+# There can only be three cases, the next node is larger than/ smaller than / equal to the current node.  For the unequal cases, if the inserted value in in the range [smaller node value, larger node value], both ends included, we can insert it into this range. The equal cases can be a little tricky, if the next node of these two nodes is the head, we can insert it into this range, however if the next node is not the head, we can not insert the new value into this range.
+class Solution:
+    def insert(self, head: 'Node', insertVal: int) -> 'Node':
+        meetHead, node = False, head
+        newNode = Node(insertVal)
+        newNode.next = newNode
+        if not head: return newNode
+        while not(meetHead and node == head):
+            if node == head: meetHead = True
+            nextNode = node.next
+            if nextNode.val > node.val:
+                if node.val <= insertVal <= nextNode.val: 
+                    self.helper(node, nextNode, newNode)
+                    return head
+            elif nextNode.val < node.val:
+                if node.val <= insertVal or insertVal <= nextNode.val:
+                    self.helper(node, nextNode, newNode)
+                    return head
+            elif nextNode.val == node.val and nextNode == head:
+                self.helper(node, nextNode, newNode)
+                return head
+            node = node.next
+        return head
+    def helper(self, first, second, new):
+        first.next = new
+        new.next = second
+```
+
+\42. Trapping Rain Water
+
+```python
+# for each bar, find the tallest in the left and right, add min(tallestInLeft, tallestInRight) - h to the final result
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        if not height: return 0
+        preTallest = height[0]
+        array = [preTallest]
+        size = len(height)
+        for i in range(1, size):
+            h = height[i]
+            preTallest = max(preTallest, h)
+            array.append(preTallest)
+        postTallest = height[-1]
+        res = 0
+        for i in range(size - 2, 0, -1):
+            h = height[i]
+            postTallest = max(postTallest, h)
+            res += min(array[i], postTallest) - h
+        return res
+```
+
+\1344. Angle Between Hands of a Clock
+
+```python
+class Solution:
+    def angleClock(self, hour: int, minutes: int) -> float:
+        hourAngle = hour * 30 + minutes / 2
+        minAngle = minutes * 6
+        angle = abs(hourAngle - minAngle)
+        return min(angle, 360 - angle)
+```
+
+\146. LRU Cache
+
+```python
+# Use dictionary to store int key and node value, the node has two fields: key and val.
+# When putting a key, if the key already exists in the dictionary, we need to remove this key node from the doubly linked list first. Then we need to create a new node with the key and value, put this node into the head. If the dictionary length is longer than the capacity, we need to remove tail and return the removed node key and remove this key from the dictionary.
+# When getting a key, if the key does not exist in the dictionary, we need to return -1. If the key exist in the dictionary, we need to remove this key node first and then insert this node into the head.
+class Node:
+    def __init__(self, k, v):
+        self.key = k
+        self.val = v
+        self.pre = None
+        self.next = None
+class LRUCache:
+
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.head = Node(0, 0)
+        self.tail = Node(0, 0)
+        self.head.next = self.tail
+        self.tail.pre = self.head
+        self.dic = dict()
+        
+
+    def get(self, key: int) -> int:
+        if key not in self.dic: return -1
+        node = self.dic[key]
+        res = node.val
+        self.remove(node)
+        self.insertHead(node)
+        return res
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.dic: 
+            node = self.dic[key]
+            self.remove(node)
+        node = Node(key, value)
+        self.dic[key] = node
+        self.insertHead(node)
+        if len(self.dic) > self.capacity:
+            removedKey = self.removeTail()
+            self.dic.pop(removedKey)
+    
+    def remove(self, node):
+        node.pre.next = node.next
+        node.next.pre = node.pre
+    
+    def insertHead(self, node):
+        node.next = self.head.next
+        self.head.next.pre = node
+        self.head.next = node
+        node.pre = self.head
+    
+    def removeTail(self):
+        res = self.tail.pre.key
+        self.tail.pre = self.tail.pre.pre
+        self.tail.pre.next = self.tail
+        return res
+```
+
+\863. All Nodes Distance K in Binary Tree
+
+```python
+# Construct the adjacent graph, then use dfs or bfs to find the node on the k level.
+class Solution:
+    def distanceK(self, root: TreeNode, target: TreeNode, k: int) -> List[int]:
+        dic = defaultdict(list)
+        self.k = k
+        self.inorder(root, dic)
+        return self.dfs(target, dic)
+        
+    def inorder(self, root, dic):
+        if root.left:
+            dic[root.left].append(root)
+            dic[root].append(root.left)
+            self.inorder(root.left, dic)
+        if root.right:
+            dic[root.right].append(root)
+            dic[root].append(root.right)
+            self.inorder(root.right, dic)
+    
+    def dfs(self, node, dic):
+        res = []
+        stack = [(node, 0)]
+        visited = set()
+        visited.add(node)
+        while stack:
+            n, level = stack.pop()
+            if level == self.k: 
+                res.append(n.val)
+                continue
+            for neighbor in dic[n]:
+                if neighbor in visited: continue
+                stack.append((neighbor, level + 1))
+                visited.add(neighbor)
+        return res
+```
+
+\987. Vertical Order Traversal of a Binary Tree
+
+```python
+# BFS, the element in the queue should be a tuple consisting of two elements, the first one is the level, the second one is the node value.
+class Solution:
+    def verticalTraversal(self, root: Optional[TreeNode]) -> List[List[int]]:
+        leftMost, rightMost = 0, 0
+        queue = []
+        dic = defaultdict(list)
+        queue.append((root, 0, 0, root.val))
+        while queue:
+            node, x, y, val = queue.pop(0)
+            dic[x].append((y, val))
+            if node.left:
+                queue.append((node.left, x - 1, y + 1, node.left.val))
+                leftMost = min(leftMost, x - 1)
+            if node.right:
+                queue.append((node.right, x + 1, y + 1, node.right.val))
+                rightMost = max(rightMost, x + 1)
+        res = []
+        for i in range(leftMost, rightMost + 1):
+            res.append([x[1] for x in sorted(dic[i], key = lambda y: (y[0], y[1]))])
+        return res
+```
+
+\270. Closest Binary Search Tree Value
+
+```python
+# When the target < root.val, root = root.left; when the target > root.val: root = root.right; when the target == root.val: return root
+class Solution:
+    def closestValue(self, root: Optional[TreeNode], target: float) -> int:
+        minDiff = float('inf')
+        res = 0
+        while root:
+            curDiff = abs(root.val - target)
+            if curDiff < minDiff:
+                minDiff = curDiff
+                res = root.val
+            if target < root.val:
+                root = root.left
+            elif target > root.val:
+                root = root.right
+            else: return root.val
+        return res
+```
+
+\766. Toeplitz Matrix
+
+```python
+class Solution:
+    def isToeplitzMatrix(self, matrix: List[List[int]]) -> bool:
+        m, n = len(matrix), len(matrix[0])
+        for i in range(m - 1, -1, -1):
+            value = matrix[i][0]
+            x, y = i, 0
+            while x <= m - 1 and y <= n - 1:
+                if matrix[x][y] != value: return False
+                x += 1
+                y += 1
+        for j in range(1, n):
+            value = matrix[0][j]
+            x, y = 0, j
+            while x <= m - 1 and y <= n - 1:
+                if matrix[x][y] != value: return False
+                x, y = x + 1, y + 1
+        return True
+            
+```
+
+\408. Valid Word Abbreviation
+
+```python
+# for each character in abbreviation, we want to compare as character == word[i], and at start, we want i to be placed at the character that has been processed, so the i should start from -1, and the update i should be i += count + 1
+class Solution:
+    def validWordAbbreviation(self, word: str, abbr: str) -> bool:
+        count = 0
+        i = -1
+        count = 0
+        for ch in abbr:
+            if ch.isalpha():
+                i += count + 1
+                if i > len(word) - 1: return False
+                if ch != word[i]: return False
+                count = 0
+            elif ch.isnumeric():
+                if ch == '0' and count == 0: return False
+                count = count * 10 + int(ch)
+        return True if i + count == len(word) - 1 else False
+```
+
+\304. Range Sum Query 2D - Immutable
+
+```python
+# Wrap the matrix with a dummy row and column, filled these dummy cell with 0.
+class NumMatrix:
+
+    def __init__(self, matrix: List[List[int]]):
+        self.matrix = matrix
+        m, n = len(matrix), len(matrix[0])
+        dp = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1] - dp[i - 1][j - 1] + matrix[i - 1][j - 1]
+        self.dp = dp
+
+    def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
+        total = self.dp[row2 + 1][col2 + 1]
+        rightTop = self.dp[row1][col2 + 1]
+        leftBottom = self.dp[row2 + 1][col1]
+        leftTop = self.dp[row1][col1]
+        return total - leftBottom - rightTop + leftTop
+```
 
 
 
